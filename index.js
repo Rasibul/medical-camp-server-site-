@@ -28,6 +28,16 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
+
+    const medicalCampCollection = client.db("medicalDB").collection("meicalCamp")
+
+    app.get('/api/v1/all-camp',async(req,res)=>{
+        const result = await medicalCampCollection.find().toArray()
+        res.send(result)
+    })
+
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
