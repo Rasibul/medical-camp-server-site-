@@ -30,9 +30,16 @@ async function run() {
     // await client.connect();
 
     const medicalCampCollection = client.db("medicalDB").collection("meicalCamp")
+    const reviewCollection = client.db("medicalDB").collection("review")
 
     app.get('/api/v1/all-camp',async(req,res)=>{
         const result = await medicalCampCollection.find().toArray()
+        res.send(result)
+    })
+
+    
+    app.get('/api/v1/review',async(req,res)=>{
+        const result = await reviewCollection.find().toArray()
         res.send(result)
     })
 
