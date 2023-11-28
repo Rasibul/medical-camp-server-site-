@@ -70,6 +70,18 @@ async function run() {
       res.send(result)
     })
 
+    app.patch('/api/v1/users/organizer/:id', async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+          $set: {
+              role: 'organizer'
+          }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc)
+      res.send(result)
+  })
+
     app.get('/api/v1/register', async (req, res) => {
       const result = await registerCollection.find().toArray()
       res.send(result)
