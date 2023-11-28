@@ -70,16 +70,25 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/api/v1/register', async (req, res) => {
+      const result = await registerCollection.find().toArray()
+      res.send(result)
+    })
+
     app.post('/api/v1/register', async (req, res) => {
       const item = req.body
       const result = await registerCollection.insertOne(item)
       res.send(result)
     })
 
-    app.get('/api/v1/register', async (req, res) => {
-      const result = await registerCollection.find().toArray()
+    
+
+    app.delete('/api/v1/register/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await registerCollection.deleteOne(query)
       res.send(result)
-    })
+  })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
