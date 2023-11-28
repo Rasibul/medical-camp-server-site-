@@ -32,42 +32,49 @@ async function run() {
     const userCollection = client.db("medicalDB").collection("users")
     const medicalCampCollection = client.db("medicalDB").collection("meicalCamp")
     const reviewCollection = client.db("medicalDB").collection("review")
+    const registerCollection = client.db("medicalDB").collection("reigster")
 
-    app.get('/api/v1/all-camp',async(req,res)=>{
-        const result = await medicalCampCollection.find().toArray()
-        res.send(result)
+    app.get('/api/v1/all-camp', async (req, res) => {
+      const result = await medicalCampCollection.find().toArray()
+      res.send(result)
     })
 
 
- 
 
-  app.get('/api/v1/all-camp/:id',async(req,res)=>{
-    const id = req.params.id
-    const query = {_id: new ObjectId(id)}
-    const result = await medicalCampCollection.findOne(query)
-    res.send(result)
-  })
 
-    app.get('/api/v1/review',async(req,res)=>{
-        const result = await reviewCollection.find().toArray()
-        res.send(result)
+    app.get('/api/v1/all-camp/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await medicalCampCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.get('/api/v1/review', async (req, res) => {
+      const result = await reviewCollection.find().toArray()
+      res.send(result)
     })
 
     app.get('/api/v1/users', async (req, res) => {
       const result = await userCollection.find().toArray()
       res.send(result)
-  })
+    })
 
-  app.post('/api/v1/users', async (req, res) => {
+    app.post('/api/v1/users', async (req, res) => {
       const user = req.body
       const query = { email: user.email }
       const existingUser = await userCollection.findOne(query)
       if (existingUser) {
-          return res.send({ message: 'user alredy axist', insertedId: null })
+        return res.send({ message: 'user alredy axist', insertedId: null })
       }
       const result = await userCollection.insertOne(user)
       res.send(result)
-  })
+    })
+
+    app.post('/api/v1/register', async (req, res) => {
+      const item = req.body
+      const result = await registerCollection.insertOne(item)
+      res.send(result)
+    })
 
 
 
@@ -82,10 +89,10 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/',(req,res)=>{
-    res.send('medical camp is running')
+app.get('/', (req, res) => {
+  res.send('medical camp is running')
 
 })
-app.listen(port,()=>{
-    console.log(`camp is running${port}`)
+app.listen(port, () => {
+  console.log(`camp is running${port}`)
 })
