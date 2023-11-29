@@ -104,9 +104,9 @@ async function run() {
       const query = { _id: new ObjectId(id) }
       const result = await medicalCampCollection.deleteOne(query)
       res.send(result)
-  })
+    })
 
-  
+
 
     app.get('/api/v1/review', async (req, res) => {
       const result = await reviewCollection.find().toArray()
@@ -168,6 +168,12 @@ async function run() {
       res.send(result)
     })
 
+    app.delete('/api/v1/register/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await registerCollection.deleteOne(query)
+      res.send(result)
+    })
 
 
     app.delete('/api/v1/register/:id', async (req, res) => {
