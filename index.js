@@ -90,7 +90,6 @@ async function run() {
     app.post('/api/v1/all-camp', async (req, res) => {
       try {
         const item = req.body;
-        console.log(item);
         const result = await medicalCampCollection.insertOne(item);
         res.send({ insertedId: result.insertedId });
       } catch (error) {
@@ -98,6 +97,28 @@ async function run() {
         res.status(500).send({ error: 'Internal Server Error' });
       }
     });
+
+    app.patch('/api/v1/all-camp/:id', async (req, res) => {
+      const data = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          campName: data.campName,
+          scheduledDateTime: data.scheduledDateTime,
+          campFees: data.campFees,
+          venueLocation: data.venueLocation,
+          specializedServices: data.specializedServices,
+          healthcareProfessionals: data.healthcareProfessionals,
+          targetAudience: data.targetAudience,
+          description: data.description,
+          image: data.image
+        }
+      }
+
+      const result = await medicalCampCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    })
 
     app.delete('/api/v1/all-camp/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id
@@ -130,7 +151,7 @@ async function run() {
     })
 
 
-    app.get('/api/v1/users/organizer/:email', verifyToken, async (req, res) => {
+    app.get('/api/v1/users/organizer/:email', verifyToken, verifyAdmin, async (req, res) => {
       const email = req.params.email
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'forbidden access' })
@@ -145,7 +166,7 @@ async function run() {
     })
 
 
-    app.patch('/api/v1/users/organizer/:id', async (req, res) => {
+    app.patch('/api/v1/users/organizer/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id
       const filter = { _id: new ObjectId(id) }
       const updatedDoc = {
@@ -176,7 +197,7 @@ async function run() {
     })
 
 
-    app.delete('/api/v1/register/:id', async (req, res) => {
+    app.delete('/api/v1/register/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await registerCollection.deleteOne(query)
