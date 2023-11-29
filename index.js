@@ -41,11 +41,28 @@ async function run() {
 
     app.post('/api/v1/jwt', async (req, res) => {
       const user = req.body
-      const token = jwt.sign(user, process.env.ACCESS_SECRYET_TOKEN, {
-          expiresIn: '1h'
+      const token = jwt.sign(user, process.env.ACESS_SECRET_TOKEN, {
+        expiresIn: '1h'
       })
       res.send({ token })
-  })
+    })
+
+    // middlware
+
+    const verifyToken = (req, res, next) => {
+      // console.log("inside token", req.headers.authorization)
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'unauthorized access' })
+      }
+      const token = req.headers.authorization.split(' ')[1]
+      jwt.verify(token, process.env.ACESS_SECRET_TOKEN, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: 'unauthorized access' })
+        }
+        req.decoded = decoded
+        next()
+      })
+    }
 
     app.get('/api/v1/all-camp', async (req, res) => {
       const result = await medicalCampCollection.find().toArray()
@@ -80,17 +97,33 @@ async function run() {
       res.send(result)
     })
 
+
+    app.get('/api/v1/users/organizer/:email', verifyToken, async (req, res) => {
+      const email = req.params.email
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
+      const query = { email: email }
+      const user = await userCollection.findOne(query)
+      let organizer = false
+      if (user) {
+        organizer = user?.role === 'organizer'
+      }
+      res.send({ organizer })
+    })
+   
+
     app.patch('/api/v1/users/organizer/:id', async (req, res) => {
       const id = req.params.id
       const filter = { _id: new ObjectId(id) }
       const updatedDoc = {
-          $set: {
-              role: 'organizer'
-          }
+        $set: {
+          role: 'organizer'
+        }
       }
       const result = await userCollection.updateOne(filter, updatedDoc)
       res.send(result)
-  })
+    })
 
     app.get('/api/v1/register', async (req, res) => {
       const result = await registerCollection.find().toArray()
@@ -103,14 +136,14 @@ async function run() {
       res.send(result)
     })
 
-    
+
 
     app.delete('/api/v1/register/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await registerCollection.deleteOne(query)
       res.send(result)
-  })
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
