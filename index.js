@@ -64,6 +64,17 @@ async function run() {
       })
     }
 
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email
+      const query = { email: email }
+      const user = await userCollection.findOne(query)
+      const isOrganizer = user?.role === 'organizer'
+      if (!isOrganizer) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
+      next()
+    }
+
     app.get('/api/v1/all-camp', async (req, res) => {
       const result = await medicalCampCollection.find().toArray()
       res.send(result)
@@ -75,6 +86,27 @@ async function run() {
       const result = await medicalCampCollection.findOne(query)
       res.send(result)
     })
+
+    app.post('/api/v1/all-camp', async (req, res) => {
+      try {
+        const item = req.body;
+        console.log(item);
+        const result = await medicalCampCollection.insertOne(item);
+        res.send({ insertedId: result.insertedId });
+      } catch (error) {
+        console.error('Error adding camp:', error);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
+    });
+
+    app.delete('/api/v1/all-camp/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await medicalCampCollection.deleteOne(query)
+      res.send(result)
+  })
+
+  
 
     app.get('/api/v1/review', async (req, res) => {
       const result = await reviewCollection.find().toArray()
@@ -111,7 +143,7 @@ async function run() {
       }
       res.send({ organizer })
     })
-   
+
 
     app.patch('/api/v1/users/organizer/:id', async (req, res) => {
       const id = req.params.id
