@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000
 
@@ -34,13 +35,22 @@ async function run() {
     const reviewCollection = client.db("medicalDB").collection("review")
     const registerCollection = client.db("medicalDB").collection("reigster")
 
+
+
+    // jwt related api
+
+    app.post('/api/v1/jwt', async (req, res) => {
+      const user = req.body
+      const token = jwt.sign(user, process.env.ACCESS_SECRYET_TOKEN, {
+          expiresIn: '1h'
+      })
+      res.send({ token })
+  })
+
     app.get('/api/v1/all-camp', async (req, res) => {
       const result = await medicalCampCollection.find().toArray()
       res.send(result)
     })
-
-
-
 
     app.get('/api/v1/all-camp/:id', async (req, res) => {
       const id = req.params.id
