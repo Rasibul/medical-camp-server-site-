@@ -169,7 +169,9 @@ async function run() {
     })
 
 
-    app.get('/api/v1/users/organizer/:email', verifyToken, verifyAdmin, async (req, res) => {
+
+
+    app.get('/api/v1/users/organizer/:email', verifyToken, async (req, res) => {
       const email = req.params.email
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'forbidden access' })
@@ -195,6 +197,7 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc)
       res.send(result)
     })
+
 
     app.get('/api/v1/register', async (req, res) => {
       const result = await registerCollection.find().toArray()
@@ -229,37 +232,37 @@ async function run() {
       console.log(amount, 'amount inside the intent')
 
       const paymentIntent = await stripe.paymentIntents.create({
-          amount: amount,
-          currency: 'usd',
-          payment_method_types: ['card']
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
       });
 
       res.send({
-          clientSecret: paymentIntent.client_secret
+        clientSecret: paymentIntent.client_secret
       })
-  });
+    });
 
-  app.post('/payments', async (req, res) => {
-    const payment = req.body;
-    const paymentResult = await paymentCollection.insertOne(payment);
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
 
-    //  carefully delete each item from the cart
-    console.log('payment info', payment);
-    const query = {
+      //  carefully delete each item from the cart
+      console.log('payment info', payment);
+      const query = {
         _id: {
-            $in: payment.cartIds.map(id => new ObjectId(id))
+          $in: payment.cartIds.map(id => new ObjectId(id))
         }
-    };
+      };
 
-    const deleteResult = await cartsCollection.deleteMany(query);
+      const deleteResult = await cartsCollection.deleteMany(query);
 
-    res.send({ paymentResult, deleteResult });
-})
+      res.send({ paymentResult, deleteResult });
+    })
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
